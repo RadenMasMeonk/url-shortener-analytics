@@ -1,122 +1,78 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import './App.css';
+
+const API_BASE_URL = 'http://localhost:5000';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [originalUrl, setOriginalUrl] = useState('');
+  const [shortenedResult, setShortenedResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Handle Submit Form Shorten URL
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setShortenedResult(null);
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/shorten`, {
+        originalUrl: originalUrl
+      });
+      setShortenedResult(response.data.data);
+      setOriginalUrl('');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Gagal memperpendek URL');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+    <div style={{ maxWidth: '600px', margin: '40px auto', padding: '20px', fontFamily: 'sans-serif' }}>
+      <h1>🔗 URL Shortener with Analytics</h1>
+      
+      {/* Form Input URL */}
+      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <input
+          type="url"
+          placeholder="Masukkan URL panjang di sini (cth: https://github.com)..."
+          value={originalUrl}
+          onChange={(e) => setOriginalUrl(e.target.value)}
+          required
+          style={{ flex: 1, padding: '10px', fontSize: '16px', borderRadius: '4px', border: '1px solid #ccc' }}
+        />
+        <button 
+          type="submit" 
+          disabled={loading}
+          style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: '4px' }}
+        >
+          {loading ? 'Processing...' : 'Shorten'}
+        </button>
+      </form>
+
+      {/* Pesan Error */}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      {/* Hasil URL Pendek */}
+      {shortenedResult && (
+        <div style={{ padding: '15px', backgroundColor: '#e6f7ff', border: '1px solid #91d5ff', borderRadius: '6px' }}>
+          <p style={{ margin: 0, fontWeight: 'bold' }}>Short Url are ready!</p>
+          <p style={{ margin: '8px 0' }}>
+            Original URL: <a href={shortenedResult.originalUrl} target="_blank" rel="noreferrer">{shortenedResult.originalUrl}</a>
+          </p>
+          <p style={{ margin: 0 }}>
+            Short URL:{' '}
+            <a href={shortenedResult.shortUrl} target="_blank" rel="noreferrer" style={{ fontWeight: 'bold', color: '#0070f3' }}>
+              {shortenedResult.shortUrl}
+            </a>
           </p>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
